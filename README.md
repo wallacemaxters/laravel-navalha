@@ -5,9 +5,11 @@ Navalha (is a joke with "Razor" name in portuguese) is a small framework written
 
 ## How to Install
 
+Run the follow command to install Navalha.
 ```bash
 composer require wallacemaxters/laravel-navalha
 ```
+Now, your need to add `@navalhaScripts` in the `<head>` tag of your template.
 
 ## Generate a Component
 
@@ -17,10 +19,19 @@ php artisan navalha:make-component Products
 
 This command will generate `resources/views/navalha/products.blade.php` view and `app/Navalha/Products.php` class.
 
-## Example with pagination
+To render the component, your need to writen the follow code:
+
+```html
+<x-navalha::component name="Products" />
+```
+
+## Navalha component example
+
+In follow example, we will paginate the data of `Product` Eloquent model in server-side component. In the view, the values will be convert to AlpineJs variables.
+
+See:
 
 ```php
-
 namespace App\Navalha;
 
 use App\Models\Product;
@@ -51,9 +62,9 @@ class Products extends Component
         return view("navalha.products");
     }
 }
-
 ```
 
+Code of `resources/views/navalha/products.blade.php`:
 
 ```html
 <div x-bind:class="{'opacity-0 duration-1000' : !$busy('paginate')}">
@@ -78,6 +89,8 @@ class Products extends Component
 
 ```
 
+Code of `welcome.blade.php`:
+
 ```blade
 <html>
 <head>
@@ -91,6 +104,12 @@ class Products extends Component
     </div>
 </body>
 </html>
+```
+
+Code of route:
+
+```php
+Route::view('/', 'welcome');
 ```
 
 ## Alpine special variables and methods
