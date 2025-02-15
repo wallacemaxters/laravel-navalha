@@ -21,5 +21,12 @@
     },
     "require-dev": {
         "laravel/framework": "^11.42"
+    },
+    "extra": {
+        "laravel" : {
+            "providers": [
+                "WallaceMaxters\\Navalha\\NavalhaServiceProvider"
+            ]
+        }
     }
 }
