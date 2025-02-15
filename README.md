@@ -9,6 +9,11 @@ Run the follow command to install Navalha.
 ```bash
 composer require wallacemaxters/laravel-navalha
 ```
+And publish assets
+```bash
+php artisan vendor:publish --tag=navalha-assets
+```
+
 Now, your need to add `@navalhaScripts` in the `<head>` tag of your template.
 
 ## Generate a Component
