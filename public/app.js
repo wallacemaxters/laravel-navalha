@@ -1,4 +1,13 @@
 document.addEventListener("alpine:init", function () {
+  function generateProxyComponent(context) {
+    const obj = {
+      get: function (target, method) {
+        return (...args) => context.$call(method, ...args);
+      },
+    };
+
+    return new Proxy({}, obj);
+  }
   async function serverMethodCall({ component, method, args, csrf }) {
     return await fetch("/_navalha/update", {
       method: "POST",
@@ -15,9 +24,19 @@ document.addEventListener("alpine:init", function () {
   Alpine.data("__navalha_component__", function ({ component, data, csrf }) {
     return {
       ...data,
-      $busy: {},
-      $call: async function (method, ...args) {
-        this.$busy[method] = true;
+      $loading: null,
+      $busy(name) {
+        if (undefined === name) {
+          return this.$loading !== null;
+        }
+        return this.$loading === name;
+      },
+      $json: (value) => JSON.stringify(value, null, "\t"),
+      get $navalha() {
+        return generateProxyComponent(this);
+      },
+      async $call(method, ...args) {
+        this.$loading = method;
 
         const response = await serverMethodCall({
           component,
@@ -27,10 +46,16 @@ document.addEventListener("alpine:init", function () {
         });
 
         try {
+
           const content = await response.json();
+
+          if (response.status >= 400) {
+            this.$dispatch("navalha-error", content);
+            return;
+          }
           Object.assign(this, content.data);
         } finally {
-          this.$busy[method] = false;
+          this.$loading = null;
         }
       },
     };
