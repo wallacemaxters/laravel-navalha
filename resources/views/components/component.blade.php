@@ -11,6 +11,6 @@ $params = [
 ];
 
 @endphp
-<{{ $tag }} x-data="__navalha_component__(@js($params))">
+<{{ $tag }} {{ $attributes }} x-data="__navalha_component__(@js($params))">
 {!! $instance->render() !!}
 </{{ $tag }}>
