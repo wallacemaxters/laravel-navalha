@@ -12,9 +12,9 @@ abstract class Component implements ArrayAccess, JsonSerializable
 
     abstract public function render();
 
-    public function call(string $method, ...$args)
+    final public function call(string $method, ...$args)
     {
-        if (! method_exists($this, $method)) {
+        if (! method_exists($this, $method) || in_array($method, ['call', 'render', 'setUp'])) {
             abort(400, 'Invalid method handler');
         }
 
@@ -26,8 +26,8 @@ abstract class Component implements ArrayAccess, JsonSerializable
         ];
     }
 
-    public function setUp()
+    final public function setUp()
     {
-        $this->data = $this->data();
+        $this->data = [...$this->data, ...$this->data()];
     }
 }
