@@ -1,31 +1,40 @@
-## Example
+
+## Generate a Component
+
+```bash
+php artisan navalha:make-component Product
+```
+
+This command will generate `resources/views/navalha/product.blade.php` view and `app/Navalha/Product.php` class.
+
+## Example with pagination
 
 ```php
 
 namespace App\Navalha;
 
-use App\Models\Produto;
+use App\Models\Product;
 use WallaceMaxters\Navalha\Component;
 
-class Produtos extends Component
+class Products extends Component
 {
     protected function data(): array
     {
         return [
-            'produtos' => [],
-            'pagina'   => 1
+            'products' => [],
+            'page'   => 1
         ];
     }
 
-    public function updateProdutos(int $page)
+    public function updateProducts(int $page)
     {
-        $this['produtos'] = Produto::query()->paginate(3, page: $page);
-        $this['pagina']   = $page;
+        $this['products'] = Product::query()->paginate(3, page: $page);
+        $this['page'] = $page;
     }
 
     public function render()
     {
-        return view("navalha.produtos");
+        return view("navalha.products");
     }
 }
 
@@ -33,17 +42,20 @@ class Produtos extends Component
 
 
 ```html
-<div class="duration-500" x-bind:class="{'opacity-0' : !$busy.updateProdutos}">
-    Carregando
+<div class="duration-500" x-bind:class="{'opacity-0' : !$busy.updateProducts}">
+    Loading
 </div>
-<div class="space-y-4" x-init="$call('updateProdutos', 1)">
-    <template x-for="item in produtos.data">
+<div class="space-y-4" x-init="$call('updateProducts', 1)">
+    <template x-for="item in products.data">
         <div class="bg-neutral-300 p-3 rounded-lg shadow">
-            <span x-text="`this is a text ${item.nome}`" />
+            <span x-text="`this is a text ${item.name}`" />
         </div>
     </template>
-    <button x-show="produtos.to !== null" class="ui-button" x-on:click="$call('updateProdutos', pagina + 1)"
-        x-text="`Próxima página ${pagina + 1}`">
+    <button 
+        x-show="products.to !== null" 
+        class="ui-button" 
+        x-on:click="$call('updateProducts', page + 1)"
+        x-text="`Next Page ${page + 1}`">
     </button>
 </div>
 
@@ -58,7 +70,7 @@ class Produtos extends Component
 <body>
     <div class="max-w-6xl mx-auto p-8">
         <h1 class="text-3xl font-bold">Navalha Example</h1>
-        <x-navalha::component name="Produtos" />
+        <x-navalha::component name="Products" />
     </div>
 </body>
 </html>
