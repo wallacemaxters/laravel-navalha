@@ -4,11 +4,16 @@ namespace WallaceMaxters\Navalha;
 
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
+use Wallacemaxters\Navalha\Commands\MakeComponent;
 
 class NavalhaServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
+        $this->commands([
+            MakeComponent::class,
+        ]);
+
         $this->loadRoutesFrom(__DIR__.'/../routes/web.php');
 
         $this->publishes([
@@ -16,7 +21,6 @@ class NavalhaServiceProvider extends ServiceProvider
         ], 'navalha-assets');
 
         Blade::anonymousComponentPath(__DIR__ . '/../resources/views/components', 'navalha');
-
 
         Blade::directive('navalhaScripts', function () {
             return <<<HTML

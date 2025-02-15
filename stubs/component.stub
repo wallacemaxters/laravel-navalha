@@ -1,0 +1,20 @@
+<?php
+
+namespace App\Navalha;
+
+use WallaceMaxters\Navalha\Component;
+
+class {{ componentClass }} extends Component
+{
+    protected function data(): array
+    {
+        return [
+            'text' => 'Welcome to Navalha! This is ' . static::class
+        ];
+    }
+
+    public function render()
+    {
+        return view('{{ view }}');
+    }
+}
