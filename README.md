@@ -1,4 +1,4 @@
-# Navalha Components
+# Navalha 
 🇧🇷🇧🇷🇧🇷🇧🇷🇧🇷🇧🇷🇧🇷🇧🇷🇧🇷🇧🇷🇧🇷
 
 Navalha (is a joke with "Razor" name in portuguese) is a small framework written for Laravel, which allows binding of Laravel data on the server-side to AlpineJS variables.
