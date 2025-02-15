@@ -1,0 +1,25 @@
+{
+    "name": "wallacemaxters/laravel-navalha",
+    "description": "A small library to transform your laravel in alpinejs template",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Wallacemaxters\\Navalha\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Wallace",
+            "email": "wallacemaxters@gmail.com"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {
+        "illuminate/routing": "^11.42",
+        "illuminate/support": "^11.42"
+    },
+    "require-dev": {
+        "laravel/framework": "^11.42"
+    }
+}

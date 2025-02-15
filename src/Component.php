@@ -2,18 +2,15 @@
 
 namespace WallaceMaxters\Navalha;
 
-abstract class Component
+use ArrayAccess;
+use JsonSerializable;
+use Wallacemaxters\Navalha\Concerns\HasData;
+
+abstract class Component implements ArrayAccess, JsonSerializable
 {
-    public array $data;
+    use HasData;
 
     abstract public function render();
-
-    protected function set(string $key, mixed $value)
-    {
-        $this->data[$key] = $value;
-
-        return $this;
-    }
 
     public function call(string $method, ...$args)
     {
@@ -27,5 +24,10 @@ abstract class Component
             'data'      => $this->data,
             'component' => class_basename(static::class)
         ];
+    }
+
+    public function setUp()
+    {
+        $this->data = $this->data();
     }
 }
