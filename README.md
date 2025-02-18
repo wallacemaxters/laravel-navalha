@@ -14,7 +14,7 @@ And publish assets
 php artisan vendor:publish --tag=navalha-assets
 ```
 
-Now, your need to add `@navalhaScripts` in the `<head>` tag of your template.
+Now, your need to add `@navalhaStyles` and `@navalhaScripts` in the `<head>` tag of your template.
 
 ## Generate a Component
 
@@ -26,8 +26,8 @@ This command will generate `resources/views/navalha/products.blade.php` view and
 
 To render the component, your need to writen the follow code:
 
-```html
-<x-navalha::component name="Products" />
+```blade
+@navalha("Products")
 ```
 
 ## Navalha component example
@@ -60,6 +60,9 @@ class Products extends Component
     {
         $this['products'] = Product::query()->paginate(3, page: $page);
         $this['page'] = $page;
+
+        // or
+        // $this->set('page', $page);
     }
 
     public function render()
@@ -99,13 +102,14 @@ Code of `welcome.blade.php`:
 ```blade
 <html>
 <head>
+    @navalhaStyles
     @vite(['resources/css/app.css'])
     @navalhaScripts
 </head>
 <body>
     <div class="max-w-6xl mx-auto p-8">
         <h1 class="text-3xl font-bold">Navalha Example</h1>
-        <x-navalha::component name="Products" />
+        @navalha('Products')
     </div>
 </body>
 </html>
@@ -117,7 +121,7 @@ Code of route:
 Route::view('/', 'welcome');
 ```
 
-## Alpine special variables and methods
+## Navalha special frontend variables and methods
 
 <table>
     <thead>
