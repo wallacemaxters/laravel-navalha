@@ -18,12 +18,18 @@ abstract class Component implements ArrayAccess, JsonSerializable
             abort(400, 'Invalid method handler');
         }
 
-        $this->$method(...$args);
+        $result = $this->$method(...$args);
 
-        return [
-            'data'      => $this->data,
-            'component' => class_basename(static::class)
-        ];
+        if ($result === null) {
+
+            return [
+                'data'      => $this->data,
+                'component' => class_basename(static::class)
+            ];
+        }
+
+        return $result;
+
     }
 
     final public function setUp()

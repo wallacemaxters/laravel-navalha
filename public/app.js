@@ -22,40 +22,57 @@ document.addEventListener("alpine:init", function () {
   }
 
   Alpine.data("__navalha_component__", function ({ component, data, csrf }) {
+
+    const internal = Alpine.reactive({
+      loading: null,
+      errors: {}
+    });
+
+    const laravelData = Alpine.reactive(data);
+
     return {
-      ...data,
-      $loading: null,
+      ...laravelData,
+      $errors(name) {
+        return name === undefined ? Object.entries(internal.errors).flatMap(x => x[1]) : (internal.errors[name] ?? [])[0];
+      },
       $busy(name) {
         if (undefined === name) {
-          return this.$loading !== null;
+          return internal.loading !== null;
         }
-        return this.$loading === name;
       },
       $json: (value) => JSON.stringify(value, null, "\t"),
       get $navalha() {
         return generateProxyComponent(this);
       },
       async $call(method, ...args) {
-        this.$loading = method;
+
+        internal.loading = method;
 
         const response = await serverMethodCall({
           component,
           method,
           args,
-          csrf,
+          // payload: laravelData,
+          csrf
         });
 
         try {
 
+          internal.errors = [];
+
           const content = await response.json();
 
-          if (response.status >= 400) {
+          if (response.status === 422) {
+            internal.errors = content.errors;
+          } else if (response.status >= 400) {
             this.$dispatch("navalha-error", content);
             return;
           }
+
           Object.assign(this, content.data);
+
         } finally {
-          this.$loading = null;
+          internal.loading = null;
         }
       },
     };

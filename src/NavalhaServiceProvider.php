@@ -22,10 +22,37 @@ class NavalhaServiceProvider extends ServiceProvider
 
         Blade::anonymousComponentPath(__DIR__ . '/../resources/views/components', 'navalha');
 
-        Blade::directive('navalhaScripts', function () {
+        Blade::directive('navalha', function ($expression) {
+            return <<<PHP
+                <?php
+                    (function (string \$name, array \$args = []) {
+
+                        \$instance = app('\App\Navalha\\\' . \$name, \$args);
+                        \$instance->setUp();
+                        \$params = [
+                            'component' => \$name,
+                            'data'      => \$instance->jsonSerialize(),
+                            'csrf'      => csrf_token()
+                        ];
+
+                        printf('<div x-cloak x-data="__navalha_component__(%s)">%s</div>', Js::from(\$params), \$instance->render());
+
+                    })({$expression});
+                ?>
+                PHP;
+        });
+
+        Blade::directive('navalhaStyles', function () {
             return <<<HTML
                 <style>[x-cloak] { display: none !important; }</style>
-                <script src="//unpkg.com/alpinejs" defer></script>
+            HTML;
+        });
+        
+        Blade::directive('navalhaScripts', function ($expression) {
+
+            $script = $expression === 'false' ? '' : sprintf('<script src=%s defer></script>', $expression ?: '//unpkg.com/alpinejs');
+            return <<<HTML
+                {$script}
                 <script src="<?php echo asset('vendor/navalha/app.js') ?>"></script>
             HTML;
         });
