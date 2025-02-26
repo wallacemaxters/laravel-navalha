@@ -16,7 +16,7 @@ Route::post('_navalha/update', function (Request $request) {
         abort(404, 'The component ' . $class . ' not found.');
     }
 
-    $result = app($class)->call($data['method'], ...$data['args'] ?? []);
+    $result = app($class)($data['method'], ...$data['args'] ?? []);
 
     return $result;
 });
