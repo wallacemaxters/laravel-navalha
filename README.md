@@ -44,7 +44,7 @@ use WallaceMaxters\Navalha\Component;
 
 class Products extends Component
 {
-    public function __construct()
+    public function mount(): void
     {
         $this->paginate(1);
     }
@@ -52,7 +52,8 @@ class Products extends Component
     protected function data(): array
     {
         return [
-            'page' => 1
+            'page'     => 1,
+            'products' => null,
         ];
     }
 
