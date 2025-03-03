@@ -1,80 +1,125 @@
 document.addEventListener("alpine:init", function () {
-  function generateProxyComponent(context) {
-    const obj = {
-      get: function (target, method) {
-        return (...args) => context.$call(method, ...args);
-      },
-    };
 
-    return new Proxy({}, obj);
-  }
-  async function serverMethodCall({ component, method, args, csrf }) {
-    return await fetch("/_navalha/update", {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-        "X-CSRF-TOKEN": csrf,
-        "X-Navalha": 1,
-      },
-      body: JSON.stringify({ component, method, args }),
-    });
-  }
+    function makeNavalhaProxy(obj) {
 
-  Alpine.data("__navalha_component__", function ({ component, data, csrf }) {
+        return new Proxy(obj, {
 
-    const internal = Alpine.reactive({
-      loading: null,
-      errors: {}
-    });
+            get: function ({ internal, context, component, csrf }, prop) {
 
-    const laravelData = Alpine.reactive(data);
+                if (prop === '$errors') {
+                    return (name) => undefined === name ? Object.entries(internal.errors).flatMap(x => x[1]) : (internal.errors[name] ?? [])[0];
+                } else if (prop === '$busy') {
+                    return (name) => (undefined === name) ? internal.loading !== null : internal.loading === name;
+                } else if (prop === '$json') {
+                    return (value) => JSON.stringify(value, null, "\t");
+                } else if (prop === '$upload') {
+                    return (method, files, ...payload) => navalhaMethodCall({
+                        component,
+                        context,
+                        csrf,
+                        internal,
+                        method,
+                        files,
+                        payload
+                    })
+                }
 
-    return {
-      ...laravelData,
-      $errors(name) {
-        return name === undefined ? Object.entries(internal.errors).flatMap(x => x[1]) : (internal.errors[name] ?? [])[0];
-      },
-      $busy(name) {
-        if (undefined === name) {
-          return internal.loading !== null;
-        }
-      },
-      $json: (value) => JSON.stringify(value, null, "\t"),
-      get $navalha() {
-        return generateProxyComponent(this);
-      },
-      async $call(method, ...args) {
+                return (...payload) => navalhaMethodCall({
+                    component,
+                    context,
+                    csrf,
+                    internal,
+                    method: prop,
+                    payload
+                });
+            }
+        });
+    }
+
+    async function navalhaMethodCall({ context, internal, csrf, component, method, files, payload }) {
 
         internal.loading = method;
 
         const response = await serverMethodCall({
-          component,
-          method,
-          args,
-          // payload: laravelData,
-          csrf
+            component,
+            method,
+            payload,
+            files,
+            csrf
         });
 
         try {
 
-          internal.errors = [];
+            internal.errors = [];
 
-          const content = await response.json();
+            const content = await response.json();
 
-          if (response.status === 422) {
-            internal.errors = content.errors;
-          } else if (response.status >= 400) {
-            this.$dispatch("navalha-error", content);
-            return;
-          }
+            if (response.status === 422) {
+                internal.errors = content.errors;
+            } else if (response.status >= 400) {
+                context.$dispatch("navalha-error", content);
+                return;
+            }
 
-          Object.assign(this, content.data);
+            Object.assign(context, content.data);
 
         } finally {
-          internal.loading = null;
+            internal.loading = null;
         }
-      },
-    };
-  });
+    }
+
+    async function serverMethodCall({ component, method, payload, files, csrf }) {
+
+        const form = new FormData();
+        form.append('component', component);
+        form.append('method', method);
+
+        if (files instanceof File || files instanceof Blob) {
+            files = [files];
+        }
+
+        files && Array.from(files).forEach((file, index) => {
+            form.append(`files[${index}]`, file, file.name);
+        });
+
+        if (payload instanceof FormData) {
+            Array.from(payload.entries()).forEach(([name, value]) => {
+                form.append(`args[${name}]`, value);
+            });
+
+        } else {
+            form.append('payload', JSON.stringify(payload));
+        }
+
+
+        return await fetch("/_navalha/update", {
+            method: "POST",
+            headers: {
+                Accept: "application/json",
+                "X-CSRF-TOKEN": csrf,
+                "X-Navalha": 1,
+            },
+            body: form,
+        });
+    }
+
+    Alpine.data("__navalha_component__", function ({ component, data, csrf }) {
+
+        const internal = Alpine.reactive({
+            loading: null,
+            errors: {}
+        });
+
+        const laravelData = Alpine.reactive(data);
+
+        return {
+            ...laravelData,
+            get $navalha() {
+                return makeNavalhaProxy({ internal, csrf, component, context: this })
+            },
+            get $n() {
+                return this.$navalha;
+            }
+        };
+    });
 });

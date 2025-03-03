@@ -3,8 +3,9 @@
 namespace WallaceMaxters\Navalha;
 
 use ArrayAccess;
-use Illuminate\Support\Facades\App;
 use JsonSerializable;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 use Wallacemaxters\Navalha\Concerns\HasData;
 
 abstract class Component implements ArrayAccess, JsonSerializable
@@ -15,13 +16,20 @@ abstract class Component implements ArrayAccess, JsonSerializable
 
     public function mount(): void {}
 
-    final public function __invoke(string $method, ...$args)
+    final public function __checkIfValidMethod(string $method)
     {
         if (! method_exists($this, $method) || in_array($method, ['render', 'setUp', 'mount', 'set'])) {
             abort(400, 'Invalid method handler');
         }
+    }
 
-        $result = $this->$method(...$args);
+    final public function __invoke(RequestData $data)
+    {
+        $method = $data->method();
+
+        $this->__checkIfValidMethod($method);
+
+        $result = $this->$method(...$data->getAsArguments());
 
         if ($result === null) {
 
@@ -32,7 +40,6 @@ abstract class Component implements ArrayAccess, JsonSerializable
         }
 
         return $result;
-
     }
 
     final public function setUp()
