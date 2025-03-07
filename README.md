@@ -76,7 +76,7 @@ class Products extends Component
 Code of `resources/views/navalha/products.blade.php`:
 
 ```html
-<div x-bind:class="{'opacity-0 duration-1000' : !$busy('paginate')}">
+<div x-bind:class="{'opacity-0 duration-1000' : !$n.$busy('paginate')}">
     Carregando...
 </div>
 <div class="space-y-4" >
@@ -89,7 +89,7 @@ Code of `resources/views/navalha/products.blade.php`:
     <nav class="flex gap-2">
         <template x-for="i in products.last_page">
             <a  x-bind:class="{'opacity-50' : i === products.current_page}"
-                x-on:click="$navalha.paginate(i)"
+                x-on:click="$n.paginate(i)"
                 x-text="i"
                 class="text-blue-500 cursor-pointer p-2"></a>
         </template>
@@ -134,17 +134,22 @@ Route::view('/', 'welcome');
     </thead>
     <tbody>
     <tr>
-        <td>$busy(String|undefined)</td>
+        <td>$n.$busy(String|undefined)</td>
         <td>Function</td>
         <td>Indicates that an specifiy or any method is called from the server.</td>
     </tr>
+     <tr>
+        <td>$n.$errors(String|undefined)</td>
+        <td>Function</td>
+        <td>Get an or many validation errors.</td>
+    </tr>
     <tr>
-        <td>$call(String)</td>
+        <td>$n.[method]()</td>
         <td>Function</td>
         <td>Call a public method of component in Laravel side.</td>
     </tr>
     <tr>
-        <td>$navalha</td>
+        <td>$n</td>
         <td>Object</td>
         <td>This a special object from Navalha that allows make methods call like $call().</td>
     </tr>
