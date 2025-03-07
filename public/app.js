@@ -4,7 +4,7 @@ document.addEventListener("alpine:init", function () {
 
         return new Proxy(obj, {
 
-            get: function ({ internal, context, component, csrf }, prop) {
+            get: function ({ internal, context, component, csrf, laravelData }, prop) {
 
                 if (prop === '$errors') {
                     return (name) => undefined === name ? Object.entries(internal.errors).flatMap(x => x[1]) : (internal.errors[name] ?? [])[0];
@@ -30,13 +30,14 @@ document.addEventListener("alpine:init", function () {
                     csrf,
                     internal,
                     method: prop,
+                    // laravelData,
                     payload
                 });
             }
         });
     }
 
-    async function navalhaMethodCall({ context, internal, csrf, component, method, files, payload }) {
+    async function navalhaMethodCall({ context, internal, csrf, component, method, files, payload, laravelData }) {
 
         internal.loading = method;
 
@@ -45,7 +46,8 @@ document.addEventListener("alpine:init", function () {
             method,
             payload,
             files,
-            csrf
+            csrf,
+            laravelData
         });
 
         try {
@@ -61,14 +63,18 @@ document.addEventListener("alpine:init", function () {
                 return;
             }
 
-            Object.assign(context, content.data);
+            if (content.component) {
+                Object.assign(context, content.data);
+            } else {
+                return content;
+            }
 
         } finally {
             internal.loading = null;
         }
     }
 
-    async function serverMethodCall({ component, method, payload, files, csrf }) {
+    async function serverMethodCall({ component, method, payload, files, csrf, laravelData }) {
 
         const form = new FormData();
         form.append('component', component);
@@ -91,6 +97,7 @@ document.addEventListener("alpine:init", function () {
             form.append('payload', JSON.stringify(payload));
         }
 
+        laravelData && form.append('laravelData', JSON.stringify(laravelData));
 
         return await fetch("/_navalha/update", {
             method: "POST",
@@ -115,7 +122,7 @@ document.addEventListener("alpine:init", function () {
         return {
             ...laravelData,
             get $navalha() {
-                return makeNavalhaProxy({ internal, csrf, component, context: this })
+                return makeNavalhaProxy({ internal, csrf, component, context: this, laravelData })
             },
             get $n() {
                 return this.$navalha;
